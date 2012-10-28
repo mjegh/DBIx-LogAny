@@ -1,0 +1,5 @@
+Revision history for Perl extension DBIx::LogAny.
+
+0.01 Sun October 28 2012
+
+  First version based on DBIx::Log4perl

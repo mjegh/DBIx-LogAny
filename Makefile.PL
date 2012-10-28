@@ -46,8 +46,10 @@ WriteMakefile(
     VERSION_FROM      => 'lib/DBIx/LogAny.pm', # finds $VERSION
     PREREQ_PM         => {Log::Any => 0.14,
                           Log::Any::Adapter => 0.10,
-		          DBI => 1.50,
-		          Test::More => 0.62},
+                          DBI => 1.50,
+                          File::Spec => 0,
+                          Data::Dumper => 0,
+                          Test::More => 0.62},
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/DBIx/LogAny.pm', # retrieve abstract from module
        AUTHOR         => 'Martin J. Evans <mjevans@cpan.org>') : ()),

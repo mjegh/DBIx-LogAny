@@ -235,18 +235,14 @@ Log::Any.
 =head1 DESCRIPTION
 
 C<DBIx::LogAny> is a wrapper over DBI which adds logging of your DBI
-activity via Log::LogAny. Log::Log4perl has many advantages
-for logging but the ones probably most attractive are:
+activity via Log::LogAny. It is based on the much older DBIx::Log4perl.
 
-The ability to turn logging on or off or change the logging you see
-without changing your code (or even without restarting your programs
-if you use C<init_and_watch>).
+C<DBIx::LogAny> is almost identical to DBIx::Log4perl except there are currently
+two things which don't work properly as yet:
 
-Different log levels allowing you to separate warnings, errors and fatals
-to different files.
-
-The ability to capture all the information available via DBI when an
-error occurs.
+o I cannot find a way with Log::Any to set caller_depth in Log::Log4perl.
+o Log::Any does not support closures passed to log methods and Log::Any
+has a lot of those - see RT 80448.
 
 =head1 METHODS
 
@@ -478,50 +474,6 @@ regular expression to match your error number and it will no longer
 appear in the log.
 
 =back
-
-Although these attributes are supported the recommended way to use
-DBIx::LogAny it to use Log::Log4perl in your application and call
-the C<Log::Log4Perl-E<gt>init> to define your log4perl configuration file.
-DBIx::Log4perl will then call
-C<Log::Log4perl-E<gt>get_logger("DBIx::Log4perl")> (as was intended by the
-authors of Log::Log4perl) and all you need is a
-C<log4perl.logger.DBIx.LogAny> entry in your configuration file.
-
-=head1 Log::Log4perl CONFIGURATION FILE
-
-Please see L<Log::Log4perl> for full details of the configuration file
-and appenders. DBIx::Log4perl contains a sample configuration file you
-may use to get started. It looks like this:
-
-  log4perl.logger = FATAL, LOGFILE
-
-  log4perl.appender.LOGFILE=Log::Log4perl::Appender::File
-  log4perl.appender.LOGFILE.filename=/tmp/log
-  log4perl.appender.LOGFILE.mode=append
-  log4perl.appender.LOGFILE.Threshold = ERROR
-
-  log4perl.appender.LOGFILE.layout=PatternLayout
-  log4perl.appender.LOGFILE.layout.ConversionPattern=[%r] %F %L %c - %m%n
-
-  log4perl.logger.DBIx.Log4perl=DEBUG, A1
-  log4perl.appender.A1=Log::Log4perl::Appender::File
-  log4perl.appender.A1.filename=/tmp/xlog
-  log4perl.appender.A1.mode=append
-  log4perl.appender.A1.layout=Log::Log4perl::Layout::SimpleLayout
-
-This is perhaps the most simple configuration. It says fatal errors go
-to /tmp/log and debug and above go to /tmp/xlog. It also uses the
-SimpleLayout which prefixes each line with the log level. You can
-use:
-
-  log4perl.appender.A1.layout=Log::Log4perl::Layout::PatternLayout
-  log4perl.appender.A1.layout.ConversionPattern=%d %p> %F{1}:%L %M - %m%n
-
-to make Log::Log4perl prefix the line with a timestamp, module name and
-filename. DBIx::LogAny sets C<$Log::Log4perl::caller_depth> in each
-method so when Log4perl outputs the module/file DBIx::LogAny
-is ignored. This is extremely useful if you need to see where a DBI
-method is called from.
 
 =head1 FORMAT OF LOG
 
@@ -845,6 +797,8 @@ L<Log::Any>
 L<Log::Any::Adapter>
 
 L<Log::Log4perl>
+
+L<Log::Any::For::DBI>
 
 =head1 AUTHOR
 

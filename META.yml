@@ -23,11 +23,14 @@ resources:
   license: http://dev.perl.org/licenses/
   bugtracker: http://rt.cpan.org/Public/Dist/Display.html?Name=DBIx-LogAny
   repository: https://github.com/mjegh/DBIx-LogAny.git
+  MailingList: http://dbi.perl.org/support
 installdirs:  site
 keywords:
   - DBI
   - DBD
   - DBIx
+  - logging
+  - tracing
 meta-spec:
   version: 1.4
   url: http://module-build.sourceforge.net/META-spec-v1.4.html

@@ -165,7 +165,7 @@ sub execute_array {
                 }
             }
             $sth->_dbix_la_error(
-                2, sub {"\t for " . join(',', map(DBI::neat($_), @plist))});
+                2, "\t for " . join(',', map(DBI::neat($_), @plist)));
         }
     } elsif ($executed) {
         if ((defined($sth->{NUM_OF_FIELDS})) ||  # result-set
@@ -176,8 +176,8 @@ sub execute_array {
         $sth->_dbix_la_debug($h, 2, "executed $executed, affected " .
                                   DBI::neat($affected));
     }
-    $sth->_dbix_la_debug($h, 2, sub {Data::Dumper->Dump(
-        [$array_tuple_status], ['ArrayTupleStatus'])})
+    $sth->_dbix_la_debug($h, 2, Data::Dumper->Dump(
+        [$array_tuple_status], ['ArrayTupleStatus']))
         if ($h->{logmask} & DBIX_LA_LOG_INPUT);
     return $executed unless wantarray;
     return ($executed, $affected);
@@ -223,9 +223,9 @@ sub fetch {			# alias for fetchrow_arrayref
     my $h = _unseen_sth($sth);
 
     my $res = $sth->SUPER::fetch(@args);
-    $sth->_dbix_la_debug($h, 2,
-        sub {Data::Dumper->Dump(
-            [$res], ["fetch($h->{dbh_no}.$sth->{private_DBIx_st_no})"])})
+    $sth->_dbix_la_debug(
+        $h, 2,
+        Data::Dumper->Dump([$res], ["fetch($h->{dbh_no}.$sth->{private_DBIx_st_no})"]))
         if ($h->{logmask} & DBIX_LA_LOG_OUTPUT);
     return $res;
 }
@@ -236,10 +236,9 @@ sub fetchrow_arrayref {			# alias for fetchrow_arrayref
     my $h =_unseen_sth($sth);
 
     my $res = $sth->SUPER::fetchrow_arrayref(@args);
-    $sth->_dbix_la_debug($h, 2,
-        sub {Data::Dumper->Dump(
-            [$res],
-            ["fetchrow_arrayref($h->{dbh_no}.$sth->{private_DBIx_st_no})"])})
+    $sth->_dbix_la_debug(
+        $h, 2,
+        Data::Dumper->Dump([$res], ["fetchrow_arrayref($h->{dbh_no}.$sth->{private_DBIx_st_no})"]))
         if ($h->{logmask} & DBIX_LA_LOG_OUTPUT);
     return $res;
 }
@@ -251,18 +250,18 @@ sub fetchrow_array {
 
     if (wantarray) {
         my @row = $sth->SUPER::fetchrow_array(@args);
-        $sth->_dbix_la_debug($h, 2,
-            sub {Data::Dumper->Dump(
-                [\@row],
-                ["fetchrow_array($h->{dbh_no}.$sth->{private_DBIx_st_no})"])})
+        $sth->_dbix_la_debug(
+            $h, 2,
+            Data::Dumper->Dump(
+                [\@row], ["fetchrow_array($h->{dbh_no}.$sth->{private_DBIx_st_no})"]))
             if ($h->{logmask} & DBIX_LA_LOG_OUTPUT);
         return @row;
     } else {
         my $row = $sth->SUPER::fetchrow_array(@args);
-        $sth->_dbix_la_debug($h, 2,
-            sub {Data::Dumper->Dump(
-                [$row],
-                ["fetchrow_array($h->{dbh_no}.$sth->{private_DBIx_st_no})"])})
+        $sth->_dbix_la_debug(
+            $h, 2,
+            Data::Dumper->Dump(
+                [$row], ["fetchrow_array($h->{dbh_no}.$sth->{private_DBIx_st_no})"]))
             if ($h->{logmask} & DBIX_LA_LOG_OUTPUT);
         return $row;
     }
@@ -274,10 +273,10 @@ sub fetchrow_hashref {
     my $h = _unseen_sth($sth);
 
     my $res = $sth->SUPER::fetchrow_hashref(@args);
-    $sth->_dbix_la_debug($h, 2,
-        sub {Data::Dumper->Dump(
-            [$res],
-            ["fetchrow_hashref($h->{dbh_no}.$sth->{private_DBIx_st_no})"])})
+    $sth->_dbix_la_debug(
+        $h, 2,
+        Data::Dumper->Dump(
+            [$res], ["fetchrow_hashref($h->{dbh_no}.$sth->{private_DBIx_st_no})"]))
         if ($h->{logmask} & DBIX_LA_LOG_OUTPUT);
     return $res;
 }

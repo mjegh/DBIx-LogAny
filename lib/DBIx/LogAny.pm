@@ -43,26 +43,25 @@ sub _dbix_la_debug {
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
 
-##### TO_DO cannot do this with Log::Any
-#####    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-#####        if $level;
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
+        if $h->{ll_loaded} && $level;
 
     if (scalar(@args) > 1) {
-	$h->{logger}->debug(
-	    sub {Data::Dumper->Dump([\@args], [$thing])})
+        $h->{logger}->debug(
+            Data::Dumper->Dump([\@args], [$thing]))
     } elsif (ref($thing) eq 'CODE') {
-	$h->{logger}->debug($thing);
+        $h->{logger}->debug($thing);
     } elsif (ref($args[0])) {
-	$h->{logger}->debug(
-	    sub {Data::Dumper->Dump([$args[0]], [$thing])})
+        $h->{logger}->debug(
+            Data::Dumper->Dump([$args[0]], [$thing]))
     } elsif (scalar(@args) == 1) {
-	if (!defined($args[0])) {
-	    $h->{logger}->debug("$thing:");
-	} else {
-	    $h->{logger}->debug("$thing: " . DBI::neat($args[0]));
-	}
+        if (!defined($args[0])) {
+            $h->{logger}->debug("$thing:");
+        } else {
+            $h->{logger}->debug("$thing: " . DBI::neat($args[0]));
+        }
     } else {
-	$h->{logger}->debug($thing);
+        $h->{logger}->debug($thing);
     }
     return;
 }
@@ -74,9 +73,8 @@ sub _dbix_la_info {
 
     return unless $h->{logger}->is_info();
 
-##### TO_DO cannot do this with Log::Any
-#####    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-#####        if $level;
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
+        if $h->{ll_loaded} && $level;
 
     $h->{logger}->info($thing);
 
@@ -92,9 +90,8 @@ sub _dbix_la_warning {
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
 
-##### TO_DO cannot do this with Log::Any
-#####    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-#####        if $level;
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
+        if $h->{ll_loaded} && $level;
 
     if (scalar(@args) > 1) {
 	$h->{logger}->warn(
@@ -118,9 +115,8 @@ sub _dbix_la_error {
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
 
-##### TO_DO cannot do this with Log::Any
-#####    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-#####        if $level;
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
+        if $h->{ll_loaded} && $level;
 
     if (scalar(@args) > 1) {
 	$h->{logger}->error(
@@ -154,8 +150,8 @@ sub dbix_la_getattr {
     my $h = $self->{private_DBIx_LogAny};
 
     if (!exists($m->{$item})) {
-	warn "$item does not exist";
-	return undef;
+        warn "$item does not exist";
+        return;
     }
     return $h->{$m->{$item}};
 }
@@ -171,8 +167,8 @@ sub dbix_la_setattr {
     my $h = $self->{private_DBIx_LogAny};
 
     if (!exists($m->{$item})) {
-	warn "$item does not exist";
-	return undef;
+        warn "$item does not exist";
+        return;
     }
     $h->{$m->{$item}} = $value;
     1;

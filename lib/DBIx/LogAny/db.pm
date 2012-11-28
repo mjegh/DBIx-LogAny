@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use DBI;
 use Data::Dumper;
+use Module::Loaded;
 
 package DBIx::LogAny::db;
 use Log::Any qw($log);
@@ -258,9 +259,11 @@ sub connected {
 
     $_glogger = $h{logger};
 
+    $h{ll_loaded} = Module::Loaded::is_loaded('Log::Log4perl');
+
     # make sure you don't change the depth before calling get_logger:
-##### TO_DO don't know how to do this with Log::Any
-#####    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 4;
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 4
+        if $h{ll_loaded};
 
     $h{dbd_specific} = 0;
     $h{driver} = $dbh->{Driver}->{Name};
@@ -269,17 +272,19 @@ sub connected {
 
     if ($h{logmask} & DBIX_LA_LOG_CONNECT) {
         local $Data::Dumper::Indent = 0;
-	$h{logger}->debug(
+        $h{logger}->debug(
             "connect($h{dbh_no}): " .
                 (defined($dsn) ? $dsn : '') . ', ' .
                     (defined($user) ? $user : '') . ', ' .
-            Data::Dumper->Dump([$attr], [qw(attr)]));
-	no strict 'refs';
-	my $v = "DBD::" . $dbh->{Driver}->{Name} . "::VERSION";
-	$h{logger}->info("DBI: " . $DBI::VERSION,
-			 ", DBIx::LogAny: " . $DBIx::LogAny::VERSION .
-			   ", Driver: " . $h{driver} . "(" .
-			     $$v . ")");
+                        Data::Dumper->Dump([$attr], [qw(attr)]))
+            if $h{logger}->is_debug;
+        no strict 'refs';
+        my $v = "DBD::" . $dbh->{Driver}->{Name} . "::VERSION";
+        $h{logger}->info("DBI: " . $DBI::VERSION,
+                         ", DBIx::LogAny: " . $DBIx::LogAny::VERSION .
+                             ", Driver: " . $h{driver} . "(" .
+                                 $$v . ")")
+            if $h{logger}->is_info;
     }
 
     #
@@ -287,12 +292,12 @@ sub connected {
     # passed to us and replace with our own.
     #
     if ($h{logmask} & DBIX_LA_LOG_ERRCAPTURE) {
-	$h{HandleError} = $attr->{HandleError}
-	    if (exists($attr->{HandleError}));
-	$h{HandleSetErr} = $attr->{HandleSetErr}
-	    if (exists($attr->{HandleSetErr}));
-	$dbh->{HandleError} = \&_error_handler;
-	$dbh->{HandleSetErr} = \&_set_err_handler;
+        $h{HandleError} = $attr->{HandleError}
+            if (exists($attr->{HandleError}));
+        $h{HandleSetErr} = $attr->{HandleSetErr}
+            if (exists($attr->{HandleSetErr}));
+        $dbh->{HandleError} = \&_error_handler;
+        $dbh->{HandleSetErr} = \&_set_err_handler;
     }
     return;
 
@@ -320,9 +325,9 @@ sub disconnect {
 	};
 	if (!$@ && $h && defined($h->{logger})) {
             if ($h->{logmask} & DBIX_LA_LOG_CONNECT) {
-##### TO_DO don't know how to do this with Log::Any
-#####                local $Log::Log4perl::caller_depth =
-#####                    $Log::Log4perl::caller_depth + 2;
+                local $Log::Log4perl::caller_depth =
+                    $Log::Log4perl::caller_depth + 2
+                        if $h->{ll_loaded};
                 $dbh->_dbix_la_debug($h, 2, "disconnect($h->{dbh_no})");
             }
 	}
@@ -365,12 +370,12 @@ sub last_insert_id {
     my ($dbh, @args) = @_;
     my $h = $dbh->{private_DBIx_LogAny};
 
-    $dbh->_dbix_la_debug($h, 2,
-	sub {Data::Dumper->Dump([\@args], ["last_insert_id($h->{dbh_no})"])})
-      if ($h->{logmask} & DBIX_LA_LOG_INPUT);
+    $dbh->_dbix_la_debug(
+        $h, 2, Data::Dumper->Dump([\@args], ["last_insert_id($h->{dbh_no})"]))
+        if ($h->{logmask} & DBIX_LA_LOG_INPUT);
 
     my $ret = $dbh->SUPER::last_insert_id(@args);
-    $dbh->_dbix_la_debug($h, 2, sub {"\t" . DBI::neat($ret)})
+    $dbh->_dbix_la_debug($h, 2, "\t" . DBI::neat($ret))
       if ($h->{logmask} & DBIX_LA_LOG_INPUT);
     return $ret;
 }
@@ -385,9 +390,6 @@ sub last_insert_id {
 sub _error_handler {
     my ($msg, $handle, $method_ret) = @_;
 
-##### TO_DO don't know how to do this with Log::Any
-#####    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1;
-
     my $dbh = $handle;
     my $lh;
     my $h = $handle->{private_DBIx_LogAny};
@@ -396,6 +398,10 @@ sub _error_handler {
     $lh = $_glogger;
     $lh = $h->{logger} if ($h && exists($h->{logger}));
     return 0 if (!$lh);
+
+    if (!$lh->is_fatal) {
+        goto FINISH;
+    }
 
     if ($h && exists($h->{err_regexp})) {
         if ($dbh->err =~ $h->{err_regexp}) {
@@ -408,27 +414,27 @@ sub _error_handler {
     $out .= "state() = " . $handle->state . "\n";
 
     if ($DBI::lasth) {
-	$out .= "  lasth type: $DBI::lasth->{Type}\n"
-	    if ($DBI::lasth->{Type});
-	$out .= "  lasth Statement ($DBI::lasth):\n    " .
-	    "$DBI::lasth->{Statement}\n"
-		if ($DBI::lasth->{Statement});
+        $out .= "  lasth type: $DBI::lasth->{Type}\n"
+            if ($DBI::lasth->{Type});
+        $out .= "  lasth Statement ($DBI::lasth):\n    " .
+            "$DBI::lasth->{Statement}\n"
+                if ($DBI::lasth->{Statement});
     }
     # get db handle if we have an st
     my $type = $handle->{Type};
     my $sql;
-    if ($type eq 'st') {	# given statement handle
-	$dbh = $handle->{Database};
-	$sql = $handle->{Statement};
+    if ($type eq 'st') {        # given statement handle
+        $dbh = $handle->{Database};
+        $sql = $handle->{Statement};
     } else {
-	# given db handle
-	# We've got other stmts under this db but we'll deal with those later
-	$sql = 'Possible SQL: ';
-	$sql .= "/$h->{Statement}/" if (exists($h->{Statement}));
-	$sql .= "/$dbh->{Statement}/"
-	  if ($dbh->{Statement} &&
-		(exists($h->{Statement}) &&
-		 ($dbh->{Statement} ne $h->{Statement})));
+        # given db handle
+        # We've got other stmts under this db but we'll deal with those later
+        $sql = 'Possible SQL: ';
+        $sql .= "/$h->{Statement}/" if (exists($h->{Statement}));
+        $sql .= "/$dbh->{Statement}/"
+            if ($dbh->{Statement} &&
+                    (exists($h->{Statement}) &&
+                         ($dbh->{Statement} ne $h->{Statement})));
     }
 
     my $dbname = exists($dbh->{Name}) ? $dbh->{Name} : "";
@@ -436,48 +442,48 @@ sub _error_handler {
     $out .= "  DB: $dbname, Username: $username\n";
     $out .= "  handle type: $type\n  SQL: " . DBI::neat($sql) . "\n";
     $out .= '  db Kids=' . $dbh->{Kids} .
-	', ActiveKids=' . $dbh->{ActiveKids} . "\n";
+        ', ActiveKids=' . $dbh->{ActiveKids} . "\n";
     $out .= "  DB errstr: " . $handle->errstr . "\n"
-	if ($handle->errstr && ($handle->errstr ne $msg));
+        if ($handle->errstr && ($handle->errstr ne $msg));
 
     if (exists($h->{ParamValues}) && $h->{ParamValues}) {
-	$out .= "  ParamValues captured in HandleSetErr:\n    ";
-	foreach (sort keys %{$h->{ParamValues}}) {
-	    $out .= "$_=" . DBI::neat($h->{ParamValues}->{$_}) . ",";
-	}
-	$out .= "\n";
+        $out .= "  ParamValues captured in HandleSetErr:\n    ";
+        foreach (sort keys %{$h->{ParamValues}}) {
+            $out .= "$_=" . DBI::neat($h->{ParamValues}->{$_}) . ",";
+        }
+        $out .= "\n";
     }
     if ($type eq 'st') {
-	my $str = "";
-	if ($handle->{ParamValues}) {
-	    foreach (sort keys %{$handle->{ParamValues}}) {
-		$str .= "$_=" . DBI::neat($handle->{ParamValues}->{$_}) . ",";
-	    }
-	}
-	$out .= "  ParamValues: $str\n";
-	$out .= "  " .
-	  Data::Dumper->Dump([$handle->{ParamArrays}], ['ParamArrays'])
-	      if ($handle->{ParamArrays});
+        my $str = "";
+        if ($handle->{ParamValues}) {
+            foreach (sort keys %{$handle->{ParamValues}}) {
+                $str .= "$_=" . DBI::neat($handle->{ParamValues}->{$_}) . ",";
+            }
+        }
+        $out .= "  ParamValues: $str\n";
+        $out .= "  " .
+            Data::Dumper->Dump([$handle->{ParamArrays}], ['ParamArrays'])
+                  if ($handle->{ParamArrays});
     }
     my @substmts;
     # get list of statements under the db
     push @substmts, $_ for (grep { defined } @{$dbh->{ChildHandles}});
     $out .= "  " . scalar(@substmts) . " sub statements:\n";
     if (scalar(@substmts)) {
-	foreach my $stmt (@substmts) {
-	    $out .= "  stmt($stmt):\n";
-	    $out .= '    SQL(' . $stmt->{Statement} . ")\n  "
-		if ($stmt->{Statement} &&
-		    (exists($h->{Statement}) &&
-		     ($h->{Statement} ne $stmt->{Statement})));
-	    if (exists($stmt->{ParamValues}) && $stmt->{ParamValues}) {
-		$out .= '   Params(';
-		foreach (sort keys %{$stmt->{ParamValues}}) {
-		    $out .= "$_=" . DBI::neat($stmt->{ParamValues}->{$_}) . ",";
-		}
-		$out .= ")\n";
-	    }
-	}
+        foreach my $stmt (@substmts) {
+            $out .= "  stmt($stmt):\n";
+            $out .= '    SQL(' . $stmt->{Statement} . ")\n  "
+                if ($stmt->{Statement} &&
+                        (exists($h->{Statement}) &&
+                             ($h->{Statement} ne $stmt->{Statement})));
+            if (exists($stmt->{ParamValues}) && $stmt->{ParamValues}) {
+                $out .= '   Params(';
+                foreach (sort keys %{$stmt->{ParamValues}}) {
+                    $out .= "$_=" . DBI::neat($stmt->{ParamValues}->{$_}) . ",";
+                }
+                $out .= ")\n";
+            }
+        }
     }
 
     if (exists($dbh->{Callbacks})) {
@@ -487,13 +493,17 @@ sub _error_handler {
     local $Carp::MaxArgLen = 256;
     $out .= "  " .Carp::longmess("DBI error trap");
     $out .= "  " . "=" x 60 . "\n";
+
+    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1
+        if $h->{ll_loaded};
+
     $lh->fatal($out);
 
   FINISH:
     if ($h && exists($h->{ErrorHandler})) {
-      return $h->{ErrorHandler}($msg, $handle, $method_ret);
+        return $h->{ErrorHandler}($msg, $handle, $method_ret);
     } else {
-      return 0;			# pass error on
+        return 0;               # pass error on
     }
 }
 

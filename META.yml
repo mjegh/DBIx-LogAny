@@ -14,6 +14,7 @@ requires:
     Log::Any::Adapter: 0.10
     Data::Dumper: 0
     File::Spec: 0
+    Module::Loaded: 0
 build_requires:
   DBI: 1.21
 configure_requires:

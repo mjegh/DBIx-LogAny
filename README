@@ -2,6 +2,8 @@ DBIx-LogAny version 0.01
 ====================
 
 This module was created from DBIx::Log4perl but uses Log::Any instead.
+I'll try to keep them in synch for a while but eventually I may drop
+DBIx::Log4Perl (unless someone complains).
 
 DBIx-LogAny is an extension for DBI to selectively log SQL, parameters,
 result-sets, transactions etc with Log::Any.
@@ -44,7 +46,11 @@ This module requires these other modules and libraries:
 
   DBI 1.50
   Log::LogAny 0.14
+  Log::Any::Adapter
   Test::More 0.62
+  File::Spec
+  Module::Loaded
+  Data::Dumper
 
 COPYRIGHT AND LICENCE
 

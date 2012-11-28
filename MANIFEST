@@ -3,7 +3,6 @@ Makefile.PL
 MANIFEST
 README
 todo.txt
-example.conf
 t/DBIx-LogAny.t
 t/simple.t
 t/lib.pl

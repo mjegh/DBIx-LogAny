@@ -10,17 +10,17 @@ sub get_config
 {
     my @v;
     if (-f ($file = 't/dbixl4p.config')  ||
-	-f ($file = '../dbixl4p.config') ||
-	-f ($file = 'dbixl4p.config')) {
-	open IN, "$file";
-	while (<IN>) {
-	    chomp;
-	    if ($_ eq 'UNDEF') {
-		push @v, undef;
-	    } else {
-		push @v, $_;
-	    }
-	}
+            -f ($file = '../dbixl4p.config') ||
+                -f ($file = 'dbixl4p.config')) {
+        open IN, "$file";
+        while (<IN>) {
+            chomp;
+            if ($_ eq 'UNDEF') {
+                push @v, undef;
+            } else {
+                push @v, $_;
+            }
+        }
     }
     return @v;
 }
@@ -31,23 +31,22 @@ sub config
 
     $logtmp1 = File::Spec->catfile($td, 'dbixroot.log');
     note("log file 1 is $logtmp1");
-    $logtmp2 = File::Spec->catfile($td, 'dbix.log');
-    note("log file 2 is $logtmp2");
-    return($logtmp1, $logtmp2);
+    return $logtmp1;
 }
 
 sub check_log
 {
-    my ($s, $file) = @_;
+    my ($s, $file, $tsize) = @_;
     $$s = "";
+    $tsize = 0 if !$tsize;
     return 0 if (! -r $file);
     my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size, $atime,$mtime,$ctime,$blksize,$blocks) = stat($file);
     return 0 if ($size <= 0);
+    return 0 if ($size <= $tsize);
     open IN, "<$file";
     while (<IN>) {$$s .= $_};
     close IN;
-    unlink $file;
     diag($$s) if ($ENV{TEST_VERBOSE});
-    return 1;
+    return $size;
 }
 1;

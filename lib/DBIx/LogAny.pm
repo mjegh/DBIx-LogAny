@@ -12,7 +12,7 @@ use DBIx::LogAny::Constants qw (:masks $LogMask);
 use DBIx::LogAny::db;
 use DBIx::LogAny::st;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 require Exporter;
 our @ISA = qw(Exporter DBI);		# look in DBI for anything we don't do
 
@@ -233,12 +233,13 @@ Log::Any.
 C<DBIx::LogAny> is a wrapper over DBI which adds logging of your DBI
 activity via Log::LogAny. It is based on the much older DBIx::Log4perl.
 
-C<DBIx::LogAny> is almost identical to DBIx::Log4perl except there are currently
-two things which don't work properly as yet:
+C<DBIx::LogAny> is almost identical to DBIx::Log4perl except:
 
-o I cannot find a way with Log::Any to set caller_depth in Log::Log4perl.
-o Log::Any does not support closures passed to log methods and Log::Any
-has a lot of those - see RT 80448.
+o it checks if Log::Log4perl is loaded before setting caller_depth.
+
+o Log::Any does not support closures passed to log methods so they are removed and an "if $log->is_xxx" added.
+
+I'll try and keep DBIx::Log4perl and DBIx::LogAny in synch for a while but I may eventually drop DBIx::Log4perl.
 
 =head1 METHODS
 
@@ -478,7 +479,7 @@ appear in the log.
 For a connect the log will contain something like:
 
   DEBUG - connect(0): DBI:mysql:mjetest, bet
-  INFO - DBI: 1.50, DBIx::LogAny: 0.01, Driver: mysql(3.0002_4)
+  INFO - DBI: 1.50, DBIx::LogAny: 0.02, Driver: mysql(3.0002_4)
 
 For
 

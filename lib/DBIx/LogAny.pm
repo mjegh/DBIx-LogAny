@@ -29,6 +29,7 @@ our @EXPORT_MASKS = qw(DBIX_LA_LOG_DEFAULT
 		       DBIX_LA_LOG_DBDSPECIFIC
 		       DBIX_LA_LOG_DELAYBINDPARAM
 		       DBIX_LA_LOG_SQL
+               DBIX_LA_LOG_STORE
 		     );
 our %EXPORT_TAGS= (masks => \@EXPORT_MASKS);
 Exporter::export_ok_tags('masks'); # all tags must be in EXPORT_OK
@@ -42,9 +43,6 @@ sub _dbix_la_debug {
 
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
-
-    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-        if $h->{ll_loaded} && $level;
 
     if (scalar(@args) > 1) {
         $h->{logger}->debug(
@@ -73,9 +71,6 @@ sub _dbix_la_info {
 
     return unless $h->{logger}->is_info();
 
-    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-        if $h->{ll_loaded} && $level;
-
     $h->{logger}->info($thing);
 
     return;
@@ -89,9 +84,6 @@ sub _dbix_la_warning {
 
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
-
-    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-        if $h->{ll_loaded} && $level;
 
     if (scalar(@args) > 1) {
 	$h->{logger}->warn(
@@ -115,9 +107,6 @@ sub _dbix_la_error {
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
 
-    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + $level
-        if $h->{ll_loaded} && $level;
-
     if (scalar(@args) > 1) {
 	$h->{logger}->error(
 	    sub {Data::Dumper->Dump([\@args], [$thing])})
@@ -136,7 +125,7 @@ sub _dbix_la_attr_map {
     return {
 	    dbix_la_logmask => 'logmask',
         dbix_la_ignore_err_regexp => 'err_regexp',
-        dbix_la_class => 'class',
+        dbix_la_category => 'category',
         dbix_la_logger => 'logger'
 	   };
 }
@@ -183,13 +172,31 @@ sub connect {
     my $dbh = $drh->SUPER::connect($dsn, $user, $pass, $attr);
     return $dbh if (!$dbh);
 
+    my $h = $dbh->{private_DBIx_LogAny};
+
+    if ($h->{logmask} & DBIX_LA_LOG_CONNECT) {
+        local $Data::Dumper::Indent = 0;
+        $h->{logger}->debug(
+            "connect($h->{dbh_no}): " .
+                (defined($dsn) ? $dsn : '') . ', ' .
+                    (defined($user) ? $user : '') . ', ' .
+                        Data::Dumper->Dump([$attr], [qw(attr)]))
+            if $h->{logger}->is_debug;
+        no strict 'refs';
+        my $v = "DBD::" . $dbh->{Driver}->{Name} . "::VERSION";
+        $h->{logger}->info("DBI: " . $DBI::VERSION,
+                         ", DBIx::LogAny: " . $DBIx::LogAny::VERSION .
+                             ", Driver: " . $h->{driver} . "(" .
+                                 $$v . ")")
+            if $h->{logger}->is_info;
+    }
+
     #
     # Enable dbms_output for DBD::Oracle else turn off DBDSPECIFIC as we have
     # no support for DBDSPECIFIC in any other drivers.
     # BUT only enable it if the log handle is doing debug as we only call
     # dbms_output_get in that case.
     #
-    my $h = $dbh->{private_DBIx_LogAny};
     $h->{dbd_specific} = 1;
     if (($h->{logger}->is_debug()) &&
             ($h->{logmask} & DBIX_LA_LOG_DBDSPECIFIC) &&
@@ -237,7 +244,7 @@ activity via Log::LogAny. It is based on the much older DBIx::Log4perl.
 
 C<DBIx::LogAny> is almost identical to DBIx::Log4perl except:
 
-o it checks if Log::Log4perl is loaded before setting caller_depth.
+o it checks if Log::Log4perl is loaded before setting wrapper_register.
 
 o Log::Any does not support closures passed to log methods so they are removed and an "if $log->is_xxx" added.
 
@@ -439,6 +446,10 @@ If set this logs the SQL passed to the do, prepare and select*
 methods. This just separates SQL logging from what
 L</DBIX_LA_LOG_INPUT> does and is generally most useful when combined
 with L<DBIX_LA_LOG_DELAYBINDPARAM>.
+
+=item DBIX_LA_LOG_STORE
+
+Log calls to DBI's STORE method.
 
 =back
 

@@ -31,7 +31,7 @@ sub STORE{
     # as we don't set private_DBIx_LogAny until the connect method sometimes
     # $h will not be set
     $dbh->_dbix_la_debug($h, 2, "STORE($h->{dbh_no})", @args)
-        if ($h && ($h->{logmask} & DBIX_LA_LOG_INPUT));
+        if ($h && ($h->{logmask} & DBIX_LA_LOG_STORE));
 
     return $dbh->SUPER::STORE(@args);
 }
@@ -267,32 +267,18 @@ sub connected {
 
     $_glogger = $h{logger};
 
-    $h{ll_loaded} = Module::Loaded::is_loaded('Log::Log4perl');
-
-    # make sure you don't change the depth before calling get_logger:
-    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 4
-        if $h{ll_loaded};
 
     $h{dbd_specific} = 0;
     $h{driver} = $dbh->{Driver}->{Name};
 
     $dbh->{private_DBIx_LogAny} = \%h;
 
-    if ($h{logmask} & DBIX_LA_LOG_CONNECT) {
-        local $Data::Dumper::Indent = 0;
-        $h{logger}->debug(
-            "connect($h{dbh_no}): " .
-                (defined($dsn) ? $dsn : '') . ', ' .
-                    (defined($user) ? $user : '') . ', ' .
-                        Data::Dumper->Dump([$attr], [qw(attr)]))
-            if $h{logger}->is_debug;
-        no strict 'refs';
-        my $v = "DBD::" . $dbh->{Driver}->{Name} . "::VERSION";
-        $h{logger}->info("DBI: " . $DBI::VERSION,
-                         ", DBIx::LogAny: " . $DBIx::LogAny::VERSION .
-                             ", Driver: " . $h{driver} . "(" .
-                                 $$v . ")")
-            if $h{logger}->is_info;
+    $h{ll_loaded} = Module::Loaded::is_loaded('Log::Log4perl');
+    if ($h{ll_loaded}) {
+        # register all our packages so Log::Log4perl skips them
+        Log::Log4perl->wrapper_register('DBIx::LogAny');
+        Log::Log4perl->wrapper_register('DBIx::LogAny::db');
+        Log::Log4perl->wrapper_register('DBIx::LogAny::st')
     }
 
     #
@@ -333,9 +319,6 @@ sub disconnect {
 	};
 	if (!$@ && $h && defined($h->{logger})) {
             if ($h->{logmask} & DBIX_LA_LOG_CONNECT) {
-                local $Log::Log4perl::caller_depth =
-                    $Log::Log4perl::caller_depth + 2
-                        if $h->{ll_loaded};
                 $dbh->_dbix_la_debug($h, 2, "disconnect($h->{dbh_no})");
             }
 	}
@@ -501,9 +484,6 @@ sub _error_handler {
     local $Carp::MaxArgLen = 256;
     $out .= "  " .Carp::longmess("DBI error trap");
     $out .= "  " . "=" x 60 . "\n";
-
-    local $Log::Log4perl::caller_depth = $Log::Log4perl::caller_depth + 1
-        if $h->{ll_loaded};
 
     $lh->fatal($out);
 

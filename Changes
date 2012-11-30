@@ -9,6 +9,13 @@ Revision history for Perl extension DBIx::LogAny.
 
   Added dbix_la_logger attribute so you can pass in your own log handle.
 
+  Added DBIX_LA_LOG_STORE so you can log calls to STORE seperately.
+
+  [MISCELLANEOUS]
+
+  Switched to use Log::Log4perl's register_wrapper instead of using
+  caller_depth.
+
 0.01 Wednesday November 28 2012
 
   First version based on DBIx::Log4perl

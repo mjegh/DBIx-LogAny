@@ -17,6 +17,7 @@ use constant DBIX_LA_LOG_ERRORS => 0x40;
 use constant DBIX_LA_LOG_DBDSPECIFIC => 0x80;
 use constant DBIX_LA_LOG_DELAYBINDPARAM => 0x100;
 use constant DBIX_LA_LOG_SQL => 0x200;
+use constant DBIX_LA_LOG_STORE => 0x400;
 
 our $LogMask = DBIX_LA_LOG_DEFAULT;
 
@@ -34,6 +35,7 @@ our @EXPORT_MASKS = qw(DBIX_LA_LOG_DEFAULT
 		       DBIX_LA_LOG_DBDSPECIFIC
                DBIX_LA_LOG_DELAYBINDPARAM
                DBIX_LA_LOG_SQL
+               DBIX_LA_LOG_STORE
 		     );
 our %EXPORT_TAGS = (masks => \@EXPORT_MASKS);
 Exporter::export_ok_tags('masks');

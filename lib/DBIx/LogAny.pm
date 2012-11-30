@@ -824,6 +824,8 @@ L<Log::Any::Adapter>
 
 L<Log::Log4perl>
 
+L<DBIx::Log4perl>
+
 L<Log::Any::For::DBI>
 
 =head1 AUTHOR

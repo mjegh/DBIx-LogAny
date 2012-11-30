@@ -1,5 +1,14 @@
 Revision history for Perl extension DBIx::LogAny.
 
-0.01 Sun October 28 2012
+0.02 Friday November 30 2012
+
+  [ENHANCEMENTS]
+
+  Added dbix_la_category attribute so you can override the category passed
+  to get_logger.
+
+  Added dbix_la_logger attribute so you can pass in your own log handle.
+
+0.01 Wednesday November 28 2012
 
   First version based on DBIx::Log4perl

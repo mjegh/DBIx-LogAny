@@ -6,7 +6,7 @@ use Data::Dumper;
 use Module::Loaded;
 
 package DBIx::LogAny::db;
-use Log::Any qw($log);
+use Log::Any;
 @DBIx::LogAny::db::ISA = qw(DBI::db DBIx::LogAny);
 use DBIx::LogAny::Constants qw (:masks $LogMask);
 
@@ -246,7 +246,15 @@ sub connected {
     $h{dbh_no} = &$_counter();
     $h{new_stmt_no} = _make_counter(0); # get a new stmt count for this dbh
 
-    $h{logger} = $log;
+	# if passed a Log4perl log handle use that
+	if (exists($attr->{dbix_la_logger})) {
+	    $h{logger} = $attr->{dbix_la_logger};
+	} elsif (exists($attr->{dbix_la_category})) {
+	    $h{category} = $attr->{dbix_la_category};
+	    $h{logger} = Log::Any->get_logger(category => $h{category});
+	} else {
+        $h{logger} = Log::Any->get_logger(category => __PACKAGE__);
+    }
 
     # save log mask
     $h{logmask} = $attr->{dbix_la_logmask} if (exists($attr->{dbix_la_logmask}));

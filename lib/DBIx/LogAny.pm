@@ -4,7 +4,7 @@ require 5.008;
 use strict;
 use warnings;
 use Carp qw(croak cluck);
-use Log::Any qw($log);
+use Log::Any;
 use Data::Dumper;
 
 package DBIx::LogAny;
@@ -135,7 +135,9 @@ sub _dbix_la_error {
 sub _dbix_la_attr_map {
     return {
 	    dbix_la_logmask => 'logmask',
-            dbix_la_ignore_err_regexp => 'err_regexp'
+        dbix_la_ignore_err_regexp => 'err_regexp',
+        dbix_la_class => 'class',
+        dbix_la_logger => 'logger'
 	   };
 }
 
@@ -448,6 +450,22 @@ connect using C<dbix_la_getattr()> and C<dbix_la_setattr()>.
 C<DBIx::LogAny> supports the following attributes:
 
 =over
+
+=item C<dbix_l4a_category>
+
+This is the string to pass on to Log::Any as the category.
+e.g.
+
+  $logger = Log::Any->get_logger(category => 'xxx::yyy');
+
+By default, if you do not specify this attribute DBIx::LogAny is
+set as the category.
+
+=item C<dbix_l4a_logger>
+
+If you have already initialised and created your own Log::Any handle
+you can pass it in as C<dbix_l4a_logger> and DBIx::LogAny will use it
+instead of getting its own logger.
 
 =item C<dbix_la_logmask>
 

@@ -228,25 +228,42 @@ Log::Any.
 
 =head1 SYNOPSIS
 
-  use Log::LogAny::Adapter;
-  use DBIx::Log4perl;
-
-  Log::Log4perl->init("/etc/mylog.conf");
-  Log::Any::Adapter->set('Log4perl');
-
+  # Simple log to a file
+  use DBIx::LogAny;
+  use Log::Any::Adapter ('File', '/path/to/file.log');
   my $dbh = DBIx::Log4perl->connect('dbi:ODBC:mydsn', $user, $pass);
+  $dbh->DBI_METHOD(args);
+
+  # Make DBIx::LogAny like DBIx::Log4perl i.e. use Log::Log4perl
+  # by default sets the category to DBIx::LogAny. You can override the
+  # category with the dbix_la_category attribute.
+  use Log::Any::Adapter ('Log4perl');
+  use DBIx::Log4perl;
+  use DBIx::LogAny;
+  Log::Log4perl->init("/etc/mylog.conf");
+  my $dbh = DBIx::Log4perl->connect('dbi:ODBC:mydsn', $user, $pass);
+  $dbh->DBI_METHOD(args);
+
+  # use your own log handle passed to DBIx::LogAny
+  use Log::Any::Adapter('File', '/path/to/file.log');
+  use Log::Any;
+  use DBIx::LogAny;
+  my $log2 = Log::Any->get_logger();
+  my $dbh = DBIx::LogAny->connect('dbi:ODBC:mydsn', $user, $pass,
+                                                                 {dbix_la_logger => $log2});
   $dbh->DBI_METHOD(args);
 
 =head1 DESCRIPTION
 
 C<DBIx::LogAny> is a wrapper over DBI which adds logging of your DBI
-activity via Log::LogAny. It is based on the much older DBIx::Log4perl.
+activity via L<Log::Any>. It is based on the much older L<DBIx::Log4perl>.
 
 C<DBIx::LogAny> is almost identical to DBIx::Log4perl except:
 
 o it checks if Log::Log4perl is loaded before setting wrapper_register.
 
-o Log::Any does not support closures passed to log methods so they are removed and an "if $log->is_xxx" added.
+o Log::Any does not support closures passed to log methods so they are
+removed and an "if $log->is_xxx" added.
 
 I'll try and keep DBIx::Log4perl and DBIx::LogAny in synch for a while but I may eventually drop DBIx::Log4perl.
 

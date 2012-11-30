@@ -16,6 +16,8 @@ Revision history for Perl extension DBIx::LogAny.
   Switched to use Log::Log4perl's register_wrapper instead of using
   caller_depth.
 
+  Updated SYNOPSIS to include more/better examples.
+
 0.01 Wednesday November 28 2012
 
   First version based on DBIx::Log4perl

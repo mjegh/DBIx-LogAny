@@ -44,16 +44,26 @@ warn "\nPlease NOTE\nYou need to set and export the DBI_* environment variables 
 WriteMakefile(
     NAME              => 'DBIx::LogAny',
     VERSION_FROM      => 'lib/DBIx/LogAny.pm', # finds $VERSION
-    PREREQ_PM         => {Log::Any => 0.14,
-                          Log::Any::Adapter => 0.10,
-                          DBI => 1.50,
-                          File::Spec => 0,
-                          Data::Dumper => 0,
-                          Test::More => 0.62},
+    LICENSE           => 'perl',
+    PREREQ_PM         => {
+        Log::Any => 0.14,
+        Log::Any::Adapter => 0.10,
+        DBI => 1.50,
+        File::Spec => 0,
+        Data::Dumper => 0,
+        Test::More => 0.62,
+        Module::Load => 0},
+    META_MERGE => {
+        resources => {
+            bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=DBIx-LogAny',
+            repository => 'https://github.com/mjegh/DBIx-LogAny.git',
+            Mailinglist => 'http://dbi.perl.org/support',
+            homepage => 'http://search.cpan.org/dist/DBIx-LogAny',
+        }
+    },
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/DBIx/LogAny.pm', # retrieve abstract from module
        AUTHOR         => 'Martin J. Evans <mjevans@cpan.org>') : ()),
-    NO_META => 1
 );
 
 

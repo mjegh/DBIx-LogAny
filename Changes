@@ -1,5 +1,12 @@
 Revision history for Perl extension DBIx::LogAny.
 
+0.03 Thursday Decembet 6 2012
+
+  [Bug Fixes]
+
+  Module::Load was missing from dependencies in Makefile.PL
+  Thanks to CPAN smokers for spotting.
+
 0.02 Friday November 30 2012
 
   [ENHANCEMENTS]

@@ -228,7 +228,7 @@ Log::Any.
 
 =head1 SYNOPSIS
 
-  # Simple log to a file
+  # Simple log to a file - you'll need IO::File for this
   use DBIx::LogAny;
   use Log::Any::Adapter ('File', '/path/to/file.log');
   my $dbh = DBIx::Log4perl->connect('dbi:ODBC:mydsn', $user, $pass);

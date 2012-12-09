@@ -52,7 +52,7 @@ WriteMakefile(
         File::Spec => 0,
         Data::Dumper => 0,
         Test::More => 0.62,
-        Module::Load => 0},
+        Module::Loaded => 0},
     META_MERGE => {
         resources => {
             bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=DBIx-LogAny',

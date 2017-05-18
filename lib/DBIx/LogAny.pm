@@ -6,6 +6,7 @@ use warnings;
 use Carp qw(croak cluck);
 use Log::Any;
 use Data::Dumper;
+use Scalar::Util qw(blessed);
 
 package DBIx::LogAny;
 use DBIx::LogAny::Constants qw (:masks $LogMask);
@@ -43,6 +44,10 @@ sub _dbix_la_debug {
 
     local $Data::Dumper::Indent = 0;
     local $Data::Dumper::Quotekeys = 0;
+
+    $args[0] = $args[0]->{Statement} if blessed($args[0]) and
+        blessed($args[0])->isa('DBI::st') and
+            defined ($args[0]->{Statement});
 
     if (scalar(@args) > 1) {
         $h->{logger}->debug(

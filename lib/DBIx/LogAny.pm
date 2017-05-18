@@ -1,4 +1,5 @@
 # $Id$
+package DBIx::LogAny;
 require 5.008;
 
 use strict;
@@ -8,7 +9,6 @@ use Log::Any;
 use Data::Dumper;
 use Scalar::Util qw(blessed);
 
-package DBIx::LogAny;
 use DBIx::LogAny::Constants qw (:masks $LogMask);
 use DBIx::LogAny::db;
 use DBIx::LogAny::st;

@@ -25,14 +25,13 @@ if (!defined($dsn) || ($dsn eq "")) {
     plan skip_all => "connection orientated test not run because no database connect information supplied";
     exit 0;
 } else {
-    plan tests => 11;
+    plan tests => 14;
 }
 
 my $out;
 #########################
 
 $logtmp1 = config();
-
 
 Log::Any::Adapter->set ('File', $logtmp1);
 
@@ -68,5 +67,19 @@ SKIP: {
 	ok($size = check_log(\$out, $logtmp1, $size), 'test for log output');
 };
 
-ok ($dbh->disconnect, 'disconnect');
+ok($sth = $dbh->prepare(qq/select b from $table where a=?/), "prepare select");
+SKIP: {
+	skip "prepare failed", 2 unless $sth;
+
+	ok($size = check_log(\$out, $logtmp1, $size), 'test for log output');
+
+	my $rows = $dbh->selectall_arrayref($sth, {}, 1);
+	is_deeply( $rows, [['one']], 'selectall_arrayref delivered one');
+};
+
 ok($size = check_log(\$out, $logtmp1, $size), 'test for log output');
+{
+    local $dbh->{PrintError} = 0;
+    eval {$dbh->do(qq/drop table $table/)};
+}
+ok ($dbh->disconnect, 'disconnect');

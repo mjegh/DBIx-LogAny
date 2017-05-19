@@ -54,7 +54,7 @@ WriteMakefile(
         Data::Dumper => 0,
         Test::More => 0.62,
         Module::Loaded => 0,
-	Scalar::Util => 0},
+        Scalar::Util => 0},
     META_MERGE => {
         resources => {
             bugtracker => 'http://rt.cpan.org/Public/Dist/Display.html?Name=DBIx-LogAny',

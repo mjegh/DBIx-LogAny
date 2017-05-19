@@ -13,7 +13,7 @@ use DBIx::LogAny::Constants qw (:masks $LogMask);
 use DBIx::LogAny::db;
 use DBIx::LogAny::st;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 require Exporter;
 our @ISA = qw(Exporter DBI);		# look in DBI for anything we don't do
 

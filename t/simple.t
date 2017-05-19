@@ -50,7 +50,7 @@ ok($size = check_log(\$out, $logtmp1, $size), 'test for log output');
     eval {$dbh->do(qq/drop table $table/)};
 }
 ok($size = check_log(\$out, $logtmp1, $size), 'drop test table');
-ok($dbh->do(qq/create table $table (a int primary key, b char(50))/),
+ok($dbh->do(qq/create table $table (a int primary key, b varchar(50))/),
    'create test table');
 ok($size = check_log(\$out, $logtmp1, $size), 'test for log output');
 

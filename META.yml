@@ -1,7 +1,7 @@
 --- #YAML:1.0
 name: DBIx-LogAny
 abstract: Log all Perl DBI calls Log::LogAny
-version: '0.05'
+version: '0.06'
 version_from: lib/DBIx/Log4perl.pm
 author:
   - 'Martin J. Evans <mjevans@cpan.org>'

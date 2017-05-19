@@ -1,5 +1,12 @@
 Revision history for Perl extension DBIx::LogAny.
 
+0.06 Friday May 19 2017
+
+  [BUG FIXES]
+
+  New test added in 0.05 showed a flaw with the table created which used
+  a char where a varchar is required.
+
 0.05 Friday May 19 2017
 
   [BUG FIXES]
